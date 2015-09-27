@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns:int="http://www.springframework.org/schema/integration"
+	xmlns:int-kafka="http://www.springframework.org/schema/integration/kafka"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:beans="http://www.springframework.org/schema/beans"
+	xmlns:int-stream="http://www.springframework.org/schema/integration/stream"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+  http://www.springframework.org/schema/beans/spring-beans.xsd
+  http://www.springframework.org/schema/integration
+  http://www.springframework.org/schema/integration/spring-integration-4.1.xsd
+  http://www.springframework.org/schema/integration/kafka
+  http://www.springframework.org/schema/integration/kafka/spring-integration-kafka.xsd
+  http://www.springframework.org/schema/integration/stream
+  http://www.springframework.org/schema/integration/stream/spring-integration-stream.xsd">
+
+	<int:poller fixed-delay="1000" time-unit="MILLISECONDS" receive-timeout="0" default="true"/>	
+
+	<int:channel id="inputToKafka">
+		<int:queue/>
+	</int:channel>
+
+
+	<int-kafka:outbound-channel-adapter kafka-producer-context-ref="kafkaProducerContext"
+			auto-startup="false"
+			channel="inputToKafka">
+		
+	</int-kafka:outbound-channel-adapter>
+
+
+	<!-- <beans:bean id="kafkaReflectionEncoder" class="org.springframework.integration.kafka.serializer.avro.AvroReflectDatumBackedKafkaEncoder">
+		<beans:constructor-arg value="java.lang.String" />
+	</beans:bean> -->
+
+	<beans:bean id="kafkaSpecificEncoder" class="org.springframework.integration.kafka.serializer.avro.AvroSpecificDatumBackedKafkaEncoder">
+		<beans:constructor-arg value="java.lang.String" />
+	</beans:bean>
+
+
+	<beans:bean id="producerProperties" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+		<beans:property name="properties">
+			<beans:props>
+				<beans:prop key="topic.metadata.refresh.interval.ms">3600000</beans:prop>
+				<beans:prop key="message.send.max.retries">5</beans:prop>
+				<beans:prop key="send.buffer.bytes">5242880</beans:prop>
+			</beans:props>
+		</beans:property>
+	</beans:bean>
+
+	<int-kafka:producer-context id="kafkaProducerContext" producer-properties="producerProperties">
+		<int-kafka:producer-configurations>
+			<int-kafka:producer-configuration broker-list="localhost:9092"
+					key-class-type="java.lang.String"
+					value-class-type="java.lang.String"
+					topic="test1"
+					value-encoder="kafkaSpecificEncoder" 
+					key-encoder="kafkaSpecificEncoder" />
+			<int-kafka:producer-configuration broker-list="localhost:9092"
+					topic="test2"
+					key-class-type="java.lang.String"
+					value-class-type="java.lang.String"
+					value-encoder="kafkaSpecificEncoder" 
+					key-encoder="kafkaSpecificEncoder"
+					/>
+		</int-kafka:producer-configurations>
+	</int-kafka:producer-context>
+</beans:beans>
