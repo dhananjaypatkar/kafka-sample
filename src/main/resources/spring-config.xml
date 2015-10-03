@@ -12,38 +12,49 @@
   http://www.springframework.org/schema/integration/stream
   http://www.springframework.org/schema/integration/stream/spring-integration-stream.xsd">
 
-	<int:channel id="inputFromKafka"/>
+	<int:channel id="inputFromKafka" >
+		
+	</int:channel>
 
-	<int:poller default="true" id="default" fixed-rate="3" time-unit="MILLISECONDS"></int:poller>
+	<int:service-activator auto-startup="true" input-channel="inputFromKafka" ref="distributionService" method="distribute">
+	</int:service-activator>
+	
+	<beans:bean class="com.dhananjay.disb.DisbService" id="distributionService">
+	</beans:bean>
+
+	<int:poller default="true" id="default" fixed-rate="3"
+		time-unit="MILLISECONDS" >
+	</int:poller>
 
 	<int-kafka:inbound-channel-adapter
 		kafka-consumer-context-ref="consumerContext" channel="inputFromKafka" >
 		
+
 	</int-kafka:inbound-channel-adapter>
 
 	<int-kafka:consumer-context id="consumerContext"
 		consumer-timeout="4000" zookeeper-connect="zookeeperConnect">
 		<int-kafka:consumer-configurations>
 			<int-kafka:consumer-configuration
-				group-id="default" value-decoder="kafkaReflectionDecoder" key-decoder="kafkaReflectionDecoder"
-				max-messages="5000">
-				<int-kafka:topic id="test1" streams="4" />
-				<int-kafka:topic id="test2" streams="4" />
+				group-id="default" value-decoder="kafkaReflectionDecoder"
+				key-decoder="kafkaReflectionDecoder" max-messages="5000">
+				<int-kafka:topic id="test3" streams="4" />
+				<int-kafka:topic id="test4" streams="4" />
 			</int-kafka:consumer-configuration>
 		</int-kafka:consumer-configurations>
 	</int-kafka:consumer-context>
-	
-	
-	<beans:bean id="kafkaReflectionDecoder" class="org.springframework.integration.kafka.serializer.avro.AvroReflectDatumBackedKafkaDecoder">
-		<beans:constructor-arg type="java.lang.Class" value="java.lang.String"/>
+
+
+	<beans:bean id="kafkaReflectionDecoder"
+		class="org.springframework.integration.kafka.serializer.avro.AvroReflectDatumBackedKafkaDecoder">
+		<beans:constructor-arg type="java.lang.Class"
+			value="java.lang.String" />
 	</beans:bean>
 
-	
 
-	<int-kafka:zookeeper-connect id="zookeeperConnect" 
-                          zk-connect="localhost:2181"
-                          zk-connection-timeout="6000"
-                          zk-session-timeout="6000"
-                          zk-sync-time="2000"/>
-	
+
+	<int-kafka:zookeeper-connect id="zookeeperConnect"
+		zk-connect="localhost:2181" zk-connection-timeout="6000"
+		zk-session-timeout="6000" zk-sync-time="2000" />
+
 </beans:beans>

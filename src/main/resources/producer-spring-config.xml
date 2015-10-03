@@ -15,12 +15,11 @@
 	<int:poller fixed-delay="1000" time-unit="MILLISECONDS" receive-timeout="0" default="true"/>	
 
 	<int:channel id="inputToKafka">
-		<int:queue/>
 	</int:channel>
 
 
 	<int-kafka:outbound-channel-adapter kafka-producer-context-ref="kafkaProducerContext"
-			auto-startup="false"
+			auto-startup="true"
 			channel="inputToKafka">
 		
 	</int-kafka:outbound-channel-adapter>
@@ -50,11 +49,11 @@
 			<int-kafka:producer-configuration broker-list="localhost:9092"
 					key-class-type="java.lang.String"
 					value-class-type="java.lang.String"
-					topic="test1"
+					topic="test3*"
 					value-encoder="kafkaSpecificEncoder" 
 					key-encoder="kafkaSpecificEncoder" />
 			<int-kafka:producer-configuration broker-list="localhost:9092"
-					topic="test2"
+					topic="test4*"
 					key-class-type="java.lang.String"
 					value-class-type="java.lang.String"
 					value-encoder="kafkaSpecificEncoder" 
